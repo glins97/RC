@@ -110,16 +110,17 @@ class Client(object):
         if status_desc == Config.RESPONSES.SUCCESSFUL:
             self.tls_started = True
 
-    def auth(self):
-        if self.connection_type != Config.CONNECTION_TYPES.ESMTP:
-            notify(Config.NOTIFICATION_TYPES.ERROR,
-                Config.MESSAGES.WRONG_PROTOCOL)
-            return
+    def auth(self, use_tls=True):
+        if use_tls:
+            if self.connection_type != Config.CONNECTION_TYPES.ESMTP:
+                notify(Config.NOTIFICATION_TYPES.ERROR,
+                    Config.MESSAGES.WRONG_PROTOCOL)
+                return
 
-        if not self.tls_started:
-            notify(Config.NOTIFICATION_TYPES.ERROR,
-                Config.MESSAGES.TLS_NOT_STARTED)
-            return
+            if not self.tls_started:
+                notify(Config.NOTIFICATION_TYPES.ERROR,
+                    Config.MESSAGES.TLS_NOT_STARTED)
+                return
             
         self.send("AUTH LOGIN")
         self.receive_response()
