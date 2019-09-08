@@ -70,5 +70,6 @@ class Server(object):
         self.active_connections.remove(conn)
         conn.close()
 
-s = Server()
-s.start()
+if __name__ == '__main__':
+    s = Server()
+    s.start()

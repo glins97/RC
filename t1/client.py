@@ -133,16 +133,18 @@ class Client(object):
     def mail(self, message, recipient):
         pass
 
-c = Client()
-c.username = 'nombregag@gmail.com'
-c.password = 'qazxsaq5601'
 
-c.connect()
-c.helo()
-c.reset()
-c.verify()
-c.noop()
-c.ehlo()
-c.help()
-c.start_tls()
-c.auth()
+if __name__ == '__main__':
+    c = Client()
+    c.username = 'nombregag@gmail.com'
+    c.password = 'qazxsaq5601'
+
+    c.connect()
+    c.helo()
+    c.reset()
+    c.verify()
+    c.noop()
+    c.ehlo()
+    c.help()
+    c.start_tls()
+    c.auth()
