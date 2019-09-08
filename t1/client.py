@@ -131,8 +131,22 @@ class Client(object):
         self.send(self.password, encoded=False, base64=True)
         self.receive_response()
 
-    def mail(self, message, recipient):
-        pass
+    def mail(self, recipients, subject, message):
+        self.send("MAIL FROM:<{}>".format(self.username))
+        self.receive_response()
+
+        for recipient in recipients:        
+            self.send("RCPT TO:<{}>".format(recipient))
+            self.receive_response()
+
+        self.send("DATA")
+        self.receive_response()
+
+        self.send('Subject:{}'.format(subject))
+
+        self.send(message)
+        self.send(".")
+        self.receive_response()
 
 
 if __name__ == '__main__':
@@ -149,3 +163,4 @@ if __name__ == '__main__':
     c.help()
     c.start_tls()
     c.auth()
+    c.mail([c.username], "Trabalho de Redes de Computadores", "Test mail")    
