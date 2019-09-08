@@ -79,13 +79,13 @@ class Client(object):
         self.socket.close()
 
     def helo(self):
-        self.send("HELO {}".format(self.username.strip('@')[0]))
+        self.send("HELO {}".format(self.username.split('@')[0]))
         _, status_desc, _ = self.receive_response()
         if status_desc == Config.RESPONSES.SUCCESSFUL:
             self.connection_type = Config.CONNECTION_TYPES.SMTP
         
     def ehlo(self):
-        self.send("HELO {}".format(self.username.strip('@')[0]))
+        self.send("EHLO {}".format(self.username.split('@')[0]))
         _, status_desc, _ = self.receive_response()
         if status_desc == Config.RESPONSES.SUCCESSFUL:
             self.connection_type = Config.CONNECTION_TYPES.ESMTP
