@@ -34,8 +34,8 @@ class Client(object):
 
         caller = inspect.stack()[1].function.upper()
         if Config.SERVER.IS_DEV_MODE:
-            formating = '\n-------------------\n'
-            deb_n(recv.replace('\r\n', '\n\t').strip())
+            formatting = '\n-------------------\n'
+            notify(formatting + recv.replace('\r\n', '\n\t').strip(), use_caller=False)
         
         descs = {
             1: Config.RESPONSES.INFORMATION, # 1xx
@@ -99,6 +99,7 @@ class Client(object):
         self.receive_response()
 
     def start_tls(self):
+        self.tls_started = False
         if self.connection_type != Config.CONNECTION_TYPES.ESMTP:
             notify(Config.NOTIFICATION_TYPES.ERROR,
                 Config.MESSAGES.WRONG_PROTOCOL)
@@ -106,8 +107,8 @@ class Client(object):
 
         self.send("STARTTLS")
         _, status_desc, _ = self.receive_response()
-        self.socket = ssl.wrap_socket(self.socket, ssl_version=ssl.PROTOCOL_TLSv1)
         if status_desc == Config.RESPONSES.SUCCESSFUL:
+            self.socket = ssl.wrap_socket(self.socket, ssl_version=ssl.PROTOCOL_TLSv1)
             self.tls_started = True
 
     def auth(self, use_tls=True):
@@ -143,7 +144,6 @@ class Client(object):
         self.receive_response()
 
         self.send('Subject:{}'.format(subject))
-
         self.send(message)
         self.send(".")
         self.receive_response()
@@ -161,6 +161,6 @@ if __name__ == '__main__':
     c.noop()
     c.ehlo()
     c.help()
-    c.start_tls()
-    c.auth()
-    c.mail([c.username], "Trabalho de Redes de Computadores", "Test mail")    
+    c.auth(use_tls=False)
+    c.mail(['nombregag@gmail.com'], '', '')
+    c.quit() 

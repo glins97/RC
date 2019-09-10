@@ -5,7 +5,7 @@ class ConfigBase(object):
 
 class Config(object):
     SERVER = ConfigBase(
-        SERVER_IP = "localhost", #"smtp.gmail.com",
+        SERVER_IP = "smtp.gmail.com",
         SERVER_PORT = 587,
         BUFFER_SIZE = 1024,
         IS_DEV_MODE = False,
