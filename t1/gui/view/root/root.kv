@@ -1,0 +1,27 @@
+#:import colors gui.view.colors
+#:import N4Accordion gui.controller.n4accordion.N4Accordion
+#:import ReportScreen gui.controller.screens.ReportScreen
+<T1Root>:
+    canvas:
+        Color:
+            rgba: colors['grey_4']
+        Rectangle:
+            size: self.size
+            pos: 0, 0
+    
+    N4Accordion:
+        id: accordion
+        pos_hint: {'center_y': 0.5}
+
+    ScreenManager:
+        size_hint: None, 1
+        width: root.width - accordion.width
+        x: accordion.width
+        id: screen_manager
+        ReportScreen:
+            id: report_screen
+            name: 'report_screen'
+        MailScreen:
+            id: mail_screen
+            name: 'mail_screen'
+

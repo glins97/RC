@@ -1,0 +1,12 @@
+#:import colors gui.view.colors
+<ReportScreen>: 
+    canvas:
+        Color:
+            rgba: colors['grey_4']
+        Rectangle:
+            size: self.size
+            pos: 0, 0
+    GridLayout:
+        id: grid
+        cols: 1
+        orientation: 'tb-lr'

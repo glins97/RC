@@ -3,16 +3,17 @@ from base64 import b64encode
 import ssl
 import inspect
 
-from config import Config
-from utils import *
+from .config import Config
+from .utils import *
 
 class Client(object):
-    def __init__(self):
+    def __init__(self, username='', password='', app=None):
         self.socket = socket(AF_INET, SOCK_STREAM)
-        self.username = ''
-        self.password = ''
+        self.username = username
+        self.password = password
         self.connection_type = Config.CONNECTION_TYPES.SMTP
         self.tls_started = False
+        self.app = app
 
     def encode(self, s, base64=False):
         res = s.encode()
@@ -35,7 +36,8 @@ class Client(object):
         caller = inspect.stack()[1].function.upper()
         if Config.SERVER.IS_DEV_MODE:
             formatting = '\n-------------------\n'
-            notify(formatting + recv.replace('\r\n', '\n\t').strip(), use_caller=False)
+            self.app.root.ids.report_screen.add_report(
+                notify(formatting + recv.replace('\r\n', '\n\t').strip(), use_caller=False))
         
         descs = {
             1: Config.RESPONSES.INFORMATION, # 1xx
@@ -48,12 +50,15 @@ class Client(object):
             status_desc = descs[int(recv[0])]
             status_code = int(recv[:3])
         except:
-            notify(Config.NOTIFICATION_TYPES.ERROR, repr(recv), caller=caller)
+            self.app.root.ids.report_screen.add_report(
+                notify(Config.NOTIFICATION_TYPES.ERROR, repr(recv), caller=caller))
 
         if status_desc == Config.RESPONSES.SUCCESSFUL: 
-            notify('[{}]'.format(status_desc), caller=caller)
+            self.app.root.ids.report_screen.add_report(
+                notify('[{}]'.format(status_desc), caller=caller))
         else:
-            notify('[{}]'.format(status_desc), recv.strip(), caller=caller)
+            self.app.root.ids.report_screen.add_report(
+                notify('[{}]'.format(status_desc), recv.strip(), caller=caller))
 
         return (status_code, status_desc, recv)
 

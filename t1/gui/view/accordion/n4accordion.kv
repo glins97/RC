@@ -1,0 +1,60 @@
+#:import colors gui.view.colors
+<N4Accordion> 
+    orientation: 'tb-lr'
+    cols: 1
+    size_hint: None, 1
+    width: 200
+    Button:
+        text: 'connect'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.connect()
+    Button:
+        text: 'helo'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.helo()
+    Button:
+        text: 'ehlo'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.ehlo()
+    Button:
+        text: 'reset'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.reset()
+    Button:
+        text: 'noop'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.noop()
+    Button:
+        text: 'start_tls'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.start_tls()
+    Button:
+        text: 'auth'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.auth()
+    Button:
+        text: 'mail'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.mail()
+    Button:
+        text: 'quit'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.quit()
