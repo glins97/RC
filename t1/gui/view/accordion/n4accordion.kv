@@ -51,10 +51,16 @@
         background_normal: ''
         background_color: colors['grey_5']
         on_release:
-            app.client.mail()
+            app.root.ids.screen_manager.current = 'mail_screen'
     Button:
         text: 'quit'
         background_normal: ''
         background_color: colors['grey_5']
         on_release:
             app.client.quit()
+    Button:
+        text: 'clear_console'
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.root.ids.report_screen.ids.grid.clear_widgets()

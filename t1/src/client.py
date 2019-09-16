@@ -36,8 +36,7 @@ class Client(object):
         caller = inspect.stack()[1].function.upper()
         if Config.SERVER.IS_DEV_MODE:
             formatting = '\n-------------------\n'
-            self.app.root.ids.report_screen.add_report(
-                notify(formatting + recv.replace('\r\n', '\n\t').strip(), use_caller=False))
+            notify(formatting + recv.replace('\r\n', '\n\t').strip(), use_caller=False)
         
         descs = {
             1: Config.RESPONSES.INFORMATION, # 1xx
@@ -137,8 +136,10 @@ class Client(object):
         self.send(self.password, encoded=False, base64=True)
         self.receive_response()
 
-    def mail(self, recipients, subject, message):
-        self.send("MAIL FROM:<{}>".format(self.username))
+    def mail(self, recipients, subject, message, username=''):
+        if not username:
+            username = self.username
+        self.send("MAIL FROM:<{}>".format(username))
         self.receive_response()
 
         for recipient in recipients:        

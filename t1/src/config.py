@@ -8,7 +8,7 @@ class Config(object):
         SERVER_IP = "smtp.gmail.com",
         SERVER_PORT = 587,
         BUFFER_SIZE = 1024,
-        IS_DEV_MODE = False,
+        IS_DEV_MODE = True,
     )
 
     RESPONSES = ConfigBase(

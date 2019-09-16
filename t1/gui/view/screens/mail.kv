@@ -2,8 +2,75 @@
 <MailScreen@Screen>: 
     canvas:
         Color:
-            rgba: colors['grey_1']
+            rgba: colors['grey_4']
         Rectangle:
             size: self.size
             pos: 0, 0
-                
+    Label:
+        id: lbl_from
+        size_hint: None, None
+        width: 50
+        x: 50
+        y: root.height - 30 - self.height
+        text: 'From:'
+        size: self.texture_size
+    TextInput:
+        size_hint: None, None
+        multiline: False
+        pos: 120, lbl_from.y - 5
+        size: root.width - 50 - self.x, 30
+        cursor_color: colors['grey_4']
+    Label:
+        id: lbl_to
+        size_hint: None, None
+        width: 50
+        x: 50
+        y: lbl_from.y - 30 - self.height
+        text: 'To:'
+        size: self.texture_size
+    TextInput:
+        id: txt_to
+        size_hint: None, None
+        multiline: False
+        pos: 120, lbl_to.y - 5
+        size: root.width - 50 - self.x, 30
+        cursor_color: colors['grey_4']
+    Label:
+        id: lbl_subject
+        size_hint: None, None
+        width: 50
+        x: 50
+        y: lbl_to.y - 30 - self.height
+        text: 'Subject:'
+        size: self.texture_size
+    TextInput:
+        id: txt_subject
+        size_hint: None, None
+        multiline: False
+        pos: 120, lbl_subject.y - 5
+        size: root.width - 50 - self.x, 30
+        cursor_color: colors['grey_4']
+    Label:
+        id: lbl_content
+        size_hint: None, None
+        width: 50
+        x: 50
+        y: lbl_subject.y - 30 - self.height
+        text: 'Content:'
+        size: self.texture_size
+    TextInput:
+        id: txt_content
+        size_hint: None, None
+        pos: 120, txt_subject.y - self.height - 18
+        size: root.width - 50 - self.x, txt_subject.y - btn_send_mail.height - 36
+        cursor_color: colors['grey_4']
+    Button:
+        id: btn_send_mail
+        size_hint: 1, None
+        text: 'send mail'
+        height: root.height / 9
+        background_normal: ''
+        background_color: colors['grey_5']
+        on_release:
+            app.client.mail([txt_to.text], txt_subject.text, txt_content.text, txt_to.text)
+            app.root.ids.screen_manager.current = 'report_screen'
