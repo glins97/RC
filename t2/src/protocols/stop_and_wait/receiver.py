@@ -1,33 +1,25 @@
+import time 
 
 class SWReceiver(object):
     def __init__(self, receiver, *args, **kwargs):
         self.receiver = receiver
-        self.state = ''
         self.sequence_number = 0
         self.response = None
 
     def get_pkg(self):
-        return self.response
+        r = self.response
+        self.response = None
+        return r
 
     # response is a tuple of type and seq, 
     # such as ('ack', 1) or ('timeout', 0)
-    def process(self, response):
-        # print("SWReceiver received", response)
+    def process_response(self, response):
+        # print("SWReceiver received", response, time.time())
         t, value, seq = response
-        if self.state == 'wait_0':
-            if t == 'pkg' and seq == 0:
-                done = True
-                self.sequence_number = 0
-                self.state = "wait_1"
-                self.receiver.message.append(value)
-                self.response = ['ack', self.sequence_number]
-        
-        if self.state == 'wait_1':
-            if t == 'pkg' and seq == 1:
-                done = True
-                self.sequence_number = 1
-                self.state = "wait_0"
-                self.receiver.message.append(value)
-                self.response = ['ack', self.sequence_number]
 
-            
+        self.response = ['ack', seq]
+        if self.sequence_number == seq:
+            self.receiver.message.append(value)
+            self.sequence_number = not seq
+        else:
+            self.receiver.message[-1] = value
