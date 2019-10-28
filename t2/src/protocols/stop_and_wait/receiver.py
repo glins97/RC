@@ -9,7 +9,7 @@ class SWReceiver(object):
     def get_pkg(self):
         r = self.response
         self.response = None
-        return r
+        return [r, time.time()]
 
     # response is a tuple of type and seq, 
     # such as ('ack', 1) or ('timeout', 0)

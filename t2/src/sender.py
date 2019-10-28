@@ -1,13 +1,14 @@
 from .protocols.stop_and_wait.sender import SWSender
+from .protocols.selective_receive.sender import SRSender
 import time
 
 class Sender(object):
     def __init__(self, protocol, *args, **kwargs):
-        self.protocol = self.load_protocol(protocol)
         self.message = []
+        self.message_size = 0
         self.recv = []
-        self.sends = {}
         self.rtts = []
+        self.protocol = self.load_protocol(protocol)
         
     def load_protocol(self, name):
         protocol = None
@@ -15,16 +16,14 @@ class Sender(object):
             protocol = SWSender(self)
             protocol.state = 'send_0' 
             
-        if name == "GO_BACK_N":
-            pass
         if name == "SELECTIVE_REPEAT":
-            pass
+            protocol = SRSender(self, 500, 1000, 0)
 
         return protocol
 
     def process(self, *args, **kwargs):
         start_ = time.time()
-        OFFSET = 5 # us
+        OFFSET = 0 # us
         OFFSET = OFFSET / 1000000
         for pkg, t in self.recv:
             if start_ - t > -OFFSET/2:

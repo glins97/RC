@@ -4,7 +4,7 @@ from .sender import Sender
 from .receiver import Receiver
 from random import uniform
 
-class Simulator(object):
+class SimulatorOld(object):
     # distance => propagation delay, in ms
     # timeout => ms
     # throughtput => bits/second
@@ -37,19 +37,23 @@ class Simulator(object):
         while True:
             self.sender.process()
             self.receiver.process()
-            sender_pkg, sender_time = self.sender.request_pkg()
-            receiver_pkg, receiver_time = self.receiver.request_pkg()
 
+            sender_pkg = self.sender.request_pkg()
+            receiver_pkg = self.receiver.request_pkg()
             if sender_pkg == 'STATUS_DONE': break
+
+            start_ = time.time()
             if sender_pkg != None:
                 if uniform(0, 1) < self.error_p: # Error
                     sender_pkg[0] = "ERR"
-                self.receiver.receive(sender_pkg, sender_time + transmission_delay + self.distance)
+                self.sender.sends[self.sender.protocol.sequence_number] = start_
+                self.receiver.receive(sender_pkg, start_ + transmission_delay + self.distance)
             
             if receiver_pkg != None:
                 if uniform(0, 1) < self.error_p: # Error
                     receiver_pkg[0] = "ERR"
-                self.sender.receive(receiver_pkg, receiver_time + self.distance)
+                self.sender.receive(receiver_pkg, start_ + self.distance)
+
         self.data['rtts'] = self.sender.rtts[:]
         self.data['transmission_end'] = time.time()
         self.evaluate()
@@ -65,19 +69,18 @@ class Simulator(object):
             print("[SUCCESS] No transmission errors!")
         else:
             print("[ERROR] There were {} wrong packages.".format(diff))
-            print([self.sender.message[index] != self.receiver.message[index] for index in range(len(self.receiver.message))] )
 
         transmission_delay = len(self.sender.message)/self.throughput
         message_size = len(self.sender.message)
         average_rtt = numpy.mean(self.data['rtts'])
         transmission_time = self.data['transmission_end'] - self.data['transmission_start']  
-
+        
         print('Total transmissino time: {:.4f}s'.format(transmission_time))
-        print('Message size: {:.1f}KB'.format(message_size/1000))
+        print('Message size: {}kb'.format(int(8 * message_size/1000)))
         print('------------------------')
         print('Average rtt: {:.4f}ms'.format(1000 * average_rtt))
         print("Transmision delay: {}ms".format(transmission_delay * 1000))
-        print('Utilization: {:.4f}%'.format(1000 * 100 * message_size / transmission_time / self.throughput))
+        print('Utilization: {:.4f}%'.format(100 * transmission_delay / (average_rtt + transmission_delay)))
 
     # in bytes
     def generate_message(self, size):

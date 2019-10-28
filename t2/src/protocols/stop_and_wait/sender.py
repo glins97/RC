@@ -7,6 +7,7 @@ class SWSender(object):
         self.state = ''
         self.message_index = 0
         self.sequence_number = 0
+        self.sends = {0: -1, 1:-1}
 
     def set_state(self, state):
         self.previous_state = self.state
@@ -14,6 +15,9 @@ class SWSender(object):
 
     def get_pkg(self):
         r = None
+        t = time.time()
+        if self.sends[self.sequence_number] == -1:
+            self.sends[self.sequence_number] = t
         if self.message_index == self.sender.message_size:
             r = "STATUS_DONE"
         elif self.state == 'send_0' and self.sequence_number == 0:
@@ -22,7 +26,7 @@ class SWSender(object):
         elif self.state == 'send_1' and self.sequence_number == 1:
             self.set_state('wait_1')
             r = ['pkg', self.sender.message[self.message_index], 1]
-        return r
+        return [r, t]
 
     # response is a tuple of type and seq, 
     # such as ('ack', 1) or ('timeout', 0)
@@ -33,7 +37,7 @@ class SWSender(object):
         if t == "ERR": self.set_state(self.previous_state)
         if self.state == 'wait_0':
             if t == "ack" and seq == 0:
-                self.sender.rtts.append(time.time() - self.sender.sends[self.sequence_number])
+                self.sender.rtts.append(time.time() - self.sends[seq])
                 self.message_index += 1
                 self.sequence_number = 1
                 self.set_state("send_1")
@@ -43,10 +47,11 @@ class SWSender(object):
     
         if self.state == 'wait_1':
             if t == "ack" and seq == 1:
-                self.sender.rtts.append(time.time() - self.sender.sends[self.sequence_number])
+                self.sender.rtts.append(time.time() - self.sends[seq])
                 self.message_index += 1
                 self.sequence_number = 0
                 self.set_state("send_0")
+                self.sends = {0: -1, 1:-1}
 
             if t == "ack" and seq == 0:
                 self.sequence_number = 1

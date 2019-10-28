@@ -1,4 +1,5 @@
 from .protocols.stop_and_wait.receiver import SWReceiver
+from .protocols.selective_receive.receiver import SRReceiver
 import time
 
 class Receiver(object):
@@ -13,16 +14,14 @@ class Receiver(object):
             protocol = SWReceiver(self)
             protocol.state = 'wait_0' 
             
-        if name == "GO_BACK_N":
-            pass
         if name == "SELECTIVE_REPEAT":
-            pass
+            protocol = SRReceiver(self, 500, 1000, 0)
 
         return protocol
 
     def process(self, *args, **kwargs):
         start_ = time.time()
-        OFFSET = 5 # us
+        OFFSET = 0 # us
         OFFSET = OFFSET / 1000000
         for pkg, t in self.recv:
             if start_ - t > -OFFSET/2:
