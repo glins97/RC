@@ -59,7 +59,7 @@ class Simulator(object):
                 self.sender.receive(receiver_pkg, receiver_time + self.distance)
         self.data['transmission_end'] = time.time()
         self.data['rtts'] = self.sender.rtts[:]
-        self.evaluate()
+        return self.evaluate()
 
     def load(self, protocol, *args, **kwargs):
         self.sender = Sender(protocol, *args, **kwargs)
@@ -85,7 +85,7 @@ class Simulator(object):
         print('Average rtt: {:.4f}ms'.format(1000 * average_rtt))
         print("Transmision delay: {}ms".format(transmission_delay * 1000))
         print('Utilization: {:.4f}%'.format(1000 * 100 * message_size / transmission_time / self.throughput))
-
+        return [transmission_time, 1000 * average_rtt, transmission_delay * 1000, 1000 * 100 * message_size / transmission_time / self.throughput]
     # in bytes
     def generate_message(self, size):
         return numpy.random.randint(0, 255, self.convert_size(size))

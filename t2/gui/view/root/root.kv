@@ -1,0 +1,232 @@
+#:import colors gui.view.colors
+<T2Root>:
+    canvas:
+        Color:
+            rgba: colors['grey_5']
+        Rectangle:
+            size: self.size
+            pos: 0, 0
+
+    ScreenManager:
+        id: sm
+        Screen:
+            id: config
+            name: "config"
+            Label:
+                id: protocol_label
+                size_hint: None, None
+                size: self.texture_size
+                text: "Protocolo: "
+                pos: 20, root.height - self.height - 20
+
+            Label:
+                id: protocol_sw_label
+                size_hint: None, None
+                size: self.texture_size
+                text: "Stop and Wait"
+                pos: protocol_sw_checkbox.x + protocol_sw_checkbox.width + 10 , protocol_label.y - 10 - self.height
+            CheckBox:
+                id: protocol_sw_checkbox
+                group: 'protocols'
+                size_hint: None, None
+                size: 18, 18
+                pos: 20, protocol_sw_label.y
+            
+            Label:
+                id: protocol_sr_label
+                size_hint: None, None
+                size: self.texture_size
+                text: "Selective Repeat"
+                pos: protocol_sr_checkbox.x + protocol_sr_checkbox.width + 10, protocol_sw_label.y
+            CheckBox:
+                id: protocol_sr_checkbox
+                group: 'protocols'
+                size_hint: None, None
+                size: 18, 18
+                pos: protocol_sw_label.x + protocol_sw_label.width + 50, protocol_sr_label.y
+                on_active:
+                    root.height = (500 if self.active else 300)
+            
+            Label:
+                id: lbl_ms
+                size_hint: None, None
+                text: 'Message size:'
+                size: self.texture_size
+                width: 50
+                x: 20
+                y: protocol_sr_checkbox.y - 40 - self.height
+            TextInput:
+                id: txt_ms
+                text: "1k"
+                size_hint: None, None
+                multiline: False
+                pos: 130, lbl_ms.y - 5
+                size: 200, 30
+                cursor_color: colors['grey_4']
+
+            Label:
+                id: lbl_ep
+                size_hint: None, None
+                text: 'Error probab:'
+                size: self.texture_size
+                width: 50
+                x: 20
+                y: lbl_ms.y - 30 - self.height
+            TextInput:
+                id: txt_ep
+                text: "0.00"
+                size_hint: None, None
+                multiline: False
+                pos: 130, lbl_ep.y - 5
+                size: 200, 30
+                cursor_color: colors['grey_4']
+
+
+            Label:
+                id: lbl_tr
+                size_hint: None, None
+                text: 'Throughput:'
+                size: self.texture_size
+                width: 50
+                x: 20
+                y: lbl_ep.y - 30 - self.height
+            TextInput:
+                id: txt_tr
+                text: "125000000"
+                size_hint: None, None
+                multiline: False
+                pos: 130, lbl_tr.y - 5
+                size: 200, 30
+                cursor_color: colors['grey_4']
+
+
+            Label:
+                id: lbl_d
+                size_hint: None, None
+                text: 'Distance:'
+                size: self.texture_size
+                width: 50
+                x: 20
+                y: lbl_tr.y - 30 - self.height
+            TextInput:
+                id: txt_d
+                text: "15"
+                size_hint: None, None
+                multiline: False
+                pos: 130, lbl_d.y - 5
+                size: 200, 30
+                cursor_color: colors['grey_4']
+
+            Label:
+                id: lbl_to
+                size_hint: None, None
+                text: 'Timeout:'
+                size: self.texture_size
+                width: 50
+                x: 20
+                y: lbl_d.y - 30 - self.height
+            TextInput:
+                id: txt_to
+                text: "10"
+                size_hint: None, None
+                multiline: False
+                pos: 130, lbl_to.y - 5
+                size: 200, 30
+                cursor_color: colors['grey_4']
+
+            Label:
+                id: lbl_ws
+                opacity: 1 if protocol_sr_checkbox.active else 0
+                size_hint: None, None
+                text: 'Window size:'
+                size: self.texture_size
+                width: 50
+                x: 20
+                y: lbl_to.y - 30 - self.height
+            TextInput:
+                id: txt_ws
+                text: "20"
+                opacity: 1 if protocol_sr_checkbox.active else 0
+                size_hint: None, None
+                multiline: False
+                pos: 130, lbl_ws.y - 5
+                size: 200, 30
+                cursor_color: colors['grey_4']
+
+            Label:
+                id: lbl_ss
+                opacity: 1 if protocol_sr_checkbox.active else 0
+                size_hint: None, None
+                text: 'Sequence size:'
+                size: self.texture_size
+                width: 50
+                x: 20
+                y: lbl_ws.y - 30 - self.height
+            TextInput:
+                id: txt_ss
+                text: "40"
+                opacity: 1 if protocol_sr_checkbox.active else 0
+                size_hint: None, None
+                multiline: False
+                pos: 130, lbl_ss.y - 5
+                size: 200, 30
+                cursor_color: colors['grey_4']
+
+            Button:
+                text: "Run"
+                size_hint: 1, None
+                height: 50
+                pos: 0, 0
+                background_normal: ''
+                background_color: colors['grey_4']
+                on_release:
+                    sm.current = "results"
+                    app.simulator.message_size = txt_ms.text
+                    app.simulator.error_p = float(txt_ep.text)
+                    app.simulator.throughput = int(txt_tr.text)
+                    app.simulator.distance = int(txt_d.text)/1000
+                    app.simulator.timeout = int(txt_to.text)
+                    app.simulator.load('STOP_AND_WAIT') if protocol_sw_checkbox.active else (app.simulator.load('SELECTIVE_REPEAT', int(txt_ws.text), int(txt_ss.text), int(txt_to.text)) if protocol_sr_checkbox.active else print("Please select a protocol!!!")) 
+        Screen:
+            id: results
+            name: "results"
+            on_enter:
+                root.run_simulator() if protocol_sw_checkbox.active or protocol_sr_checkbox.active else ''
+                ttt.text = "Total transmissin time: " + str(root.total_transmission_time)
+                artt.text = "Average rtt: " + str(root.average_rtt)
+                td.text = "Transmission delay: " + str(root.transmission_delay)
+                u.text = "Usage: " + str(root.utilization)
+            Label:
+                id: ttt
+                size_hint: None, None
+                size: self.texture_size
+                text: "Total transmissin time: "
+                pos: 20, root.height - self.height - 20
+            Label:
+                id: artt
+                size_hint: None, None
+                size: self.texture_size
+                text: "Average rtt: "
+                pos: 20, ttt.y - self.height - 20
+            Label:
+                id: td
+                size_hint: None, None
+                size: self.texture_size
+                text: "Transmission delay: "
+                pos: 20, artt.y - self.height - 20
+            Label:
+                id: u
+                size_hint: None, None
+                size: self.texture_size
+                text: "Usage: "
+                pos: 20, td.y - self.height - 20
+            Button:
+                text: "Try again"
+                size_hint: 1, None
+                height: 50
+                pos: 0, 0
+                background_normal: ''
+                background_color: colors['grey_4']
+                on_release:
+                    sm.current = "config"
+                
