@@ -8,16 +8,16 @@ class Sender(object):
         self.message_size = 0
         self.recv = []
         self.rtts = []
-        self.protocol = self.load_protocol(protocol)
+        self.protocol = self.load_protocol(protocol, *args, **kwargs)
         
-    def load_protocol(self, name):
+    def load_protocol(self, name, *args, **kwargs):
         protocol = None
         if name == "STOP_AND_WAIT":
             protocol = SWSender(self)
             protocol.state = 'send_0' 
             
         if name == "SELECTIVE_REPEAT":
-            protocol = SRSender(self, 500, 1000, 0)
+            protocol = SRSender(self, *args, **kwargs)
 
         return protocol
 
@@ -25,10 +25,11 @@ class Sender(object):
         start_ = time.time()
         OFFSET = 0 # us
         OFFSET = OFFSET / 1000000
-        for pkg, t in self.recv:
-            if start_ - t > -OFFSET/2:
-                self.recv.remove([pkg, t])
-                self.protocol.process_response(pkg, *args, **kwargs) 
+        for obj in self.recv:
+            pkg, t = obj
+            if start_ - t > -OFFSET:
+                self.recv.remove(obj)
+                self.protocol.process_response(pkg, *args, **kwargs)
 
     def receive(self, pkg, time, *args, **kwargs):
         if pkg != None:

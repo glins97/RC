@@ -4,18 +4,18 @@ import time
 
 class Receiver(object):
     def __init__(self, protocol, *args, **kwargs):
-        self.protocol = self.load_protocol(protocol)
+        self.protocol = self.load_protocol(protocol, *args, **kwargs)
         self.message = []
         self.recv = []
 
-    def load_protocol(self, name):
+    def load_protocol(self, name, *args, **kwargs):
         protocol = None
         if name == "STOP_AND_WAIT":
             protocol = SWReceiver(self)
             protocol.state = 'wait_0' 
             
         if name == "SELECTIVE_REPEAT":
-            protocol = SRReceiver(self, 500, 1000, 0)
+            protocol = SRReceiver(self, *args, **kwargs)
 
         return protocol
 
@@ -23,9 +23,10 @@ class Receiver(object):
         start_ = time.time()
         OFFSET = 0 # us
         OFFSET = OFFSET / 1000000
-        for pkg, t in self.recv:
-            if start_ - t > -OFFSET/2:
-                self.recv.remove([pkg, t])
+        for obj in self.recv:
+            pkg, t = obj
+            if start_ - t > -OFFSET:
+                self.recv.remove(obj)
                 self.protocol.process_response(pkg, *args, **kwargs)
 
     def receive(self, pkg, time, *args, **kwargs):

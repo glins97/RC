@@ -3,15 +3,18 @@ import time
 from .sender import Sender
 from .receiver import Receiver
 from random import uniform
+import sys
 
 class Simulator(object):
+    # message_size => @string size in bytes
     # distance => propagation delay, in ms
     # timeout => ms
-    # throughtput => bits/second
+    # throughtput => bytes/second
     # error_p => probability of error with range [0, 1] 
-    def __init__(self, error_p, throughput, distance, timeout, *args, **kwargs):
+    def __init__(self, message_size, error_p, throughput, distance, timeout, *args, **kwargs):
+        self.message_size = message_size
         self.error_p = error_p
-        self.throughput = throughput/8
+        self.throughput = throughput
         self.distance = distance/1000
         self.timeout = timeout
         
@@ -20,7 +23,7 @@ class Simulator(object):
 
         self.data = {}
         
-    def run(self, message_size):
+    def run(self):
         if self.sender == None:
             print("Simulator has no sender. Please call method 'load' before running.")
             return
@@ -29,34 +32,38 @@ class Simulator(object):
             print("Simulator has no receiver. Please call method 'load' before running.")
             return
 
-        self.sender.message = self.generate_message(message_size)
+        self.sender.message = self.generate_message(self.message_size)
         self.sender.message_size = len(self.sender.message)
-        self.data['transmission_start'] = time.time()
 
         transmission_delay = len(self.sender.message)/self.throughput
+        self.data['transmission_start'] = time.time()
+        i = 0
         while True:
             self.sender.process()
             self.receiver.process()
+
+            sys.stdout.write("Transmission: " + str(i * 100 / self.sender.message_size) + "%" + "\r")
             sender_pkg, sender_time = self.sender.request_pkg()
             receiver_pkg, receiver_time = self.receiver.request_pkg()
-
-            if sender_pkg == 'STATUS_DONE': break
-            if sender_pkg != None:
+            
+            if i == self.sender.message_size: break
+            if sender_pkg != None and sender_pkg != 'STATUS_DONE':
                 if uniform(0, 1) < self.error_p: # Error
                     sender_pkg[0] = "ERR"
                 self.receiver.receive(sender_pkg, sender_time + transmission_delay + self.distance)
             
             if receiver_pkg != None:
+                i += 1
                 if uniform(0, 1) < self.error_p: # Error
                     receiver_pkg[0] = "ERR"
                 self.sender.receive(receiver_pkg, receiver_time + self.distance)
-        self.data['rtts'] = self.sender.rtts[:]
         self.data['transmission_end'] = time.time()
+        self.data['rtts'] = self.sender.rtts[:]
         self.evaluate()
 
-    def load(self, protocol):
-        self.sender = Sender(protocol)
-        self.receiver = Receiver(protocol)
+    def load(self, protocol, *args, **kwargs):
+        self.sender = Sender(protocol, *args, **kwargs)
+        self.receiver = Receiver(protocol, *args, **kwargs)
         return self
 
     def evaluate(self):
@@ -65,8 +72,8 @@ class Simulator(object):
             print("[SUCCESS] No transmission errors!")
         else:
             print("[ERROR] There were {} wrong packages.".format(diff))
-            print([self.sender.message[index] != self.receiver.message[index] for index in range(len(self.receiver.message))] )
-
+            for i in range(len(self.receiver.message)):
+                print('{}x{}'.format(self.sender.message[i], self.receiver.message[i]), end=" ")
         transmission_delay = len(self.sender.message)/self.throughput
         message_size = len(self.sender.message)
         average_rtt = numpy.mean(self.data['rtts'])
