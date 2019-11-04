@@ -11,6 +11,7 @@ class SWSender(object):
         self.message_index = 0
         self.sequence_number = 0
         self.sends = {0: -1, 1:-1}
+        self.resend_seq = -1
 
     # Observer pattern no estado do protocolo;
     # Permite que qualquer alteração ao state, salve o state atual
@@ -24,6 +25,9 @@ class SWSender(object):
     def get_pkg(self):
         r = None
         t = time.time()
+        if self.resend_seq != -1:
+            self.resend_seq = 1
+            self.set_state(self.previous_state)
 
         # Verifica se já foi enviado um pacote com a seq atual;
         #  -1 é o marcador que indica que a sequencia ainda não foi enviada;
@@ -48,10 +52,10 @@ class SWSender(object):
         # print("SWSender received", response, self.state)
         t, seq = response
 
-        if t == "ERR": self.set_state(self.previous_state)
         if self.state == 'wait_0':
             if t == "ack" and seq == 0:
                 self.sender.rtts.append(time.time() - self.sends[seq])
+                self.sends[seq] = -1
                 self.message_index += 1
                 self.sequence_number = 1
                 self.set_state("send_1")
@@ -62,6 +66,7 @@ class SWSender(object):
         if self.state == 'wait_1':
             if t == "ack" and seq == 1:
                 self.sender.rtts.append(time.time() - self.sends[seq])
+                self.sends[seq] = -1
                 self.message_index += 1
                 self.sequence_number = 0
                 self.set_state("send_0")

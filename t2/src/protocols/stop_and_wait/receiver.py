@@ -8,7 +8,6 @@ class SWReceiver(object):
         self.receiver = receiver
         self.sequence_number = 0
         self.response = None
-
     
     # Pede um pacote ao protocolo, retornando o byte a ser transmitido e o marcador de tempo atual;
     # Retorno None indica que não há pacotes a serem transmitidos;
@@ -26,6 +25,7 @@ class SWReceiver(object):
         self.response = ['ack', seq]
         if self.sequence_number == seq:
             self.receiver.message.append(value)
+            self.receiver.message_size += 1
             self.sequence_number = not seq
         else:
             self.receiver.message[-1] = value

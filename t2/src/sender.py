@@ -13,18 +13,19 @@ import time
 #   utilizar uma quantidade não-limitada de protocolos. Ainda, a adição de novos protocolos não 
 #   implica na modificação do código atual, facilitando a expansão e correção do sistema;
 class Sender(object):
-    def __init__(self, protocol, *args, **kwargs):
+    def __init__(self, protocol, timeout, *args, **kwargs):
+        self.protocol = self.load_protocol(protocol, *args, **kwargs)
+        self.timeout = timeout/1000
         self.message = []
         self.message_size = 0
         self.recv = []
         self.rtts = []
-        self.protocol = self.load_protocol(protocol, *args, **kwargs)
         
     # Carrega o protocolo especificado, bem como configurações adicionais contidas em *args e **kwargs
     def load_protocol(self, name, *args, **kwargs):
         protocol = None
         if name == "STOP_AND_WAIT":
-            protocol = SWSender(self)
+            protocol = SWSender(self, *args, **kwargs)
             protocol.state = 'send_0' 
             
         if name == "SELECTIVE_REPEAT":
@@ -41,6 +42,17 @@ class Sender(object):
         #   o resultado obtido, diminuindo o erro do sistema
         OFFSET = 5 # us
         OFFSET = OFFSET / 1000000
+
+        # Verifica timeouts
+        if self.timeout > 0:
+            for seq in self.protocol.sends:
+                if self.protocol.sends[seq] == -1: continue
+                if start_ - self.protocol.sends[seq] > self.timeout:
+                    self.protocol.resend_seq = seq
+                    print('\ntimeout!!!')
+                    print(start_)
+                    print(self.protocol.sends[seq])
+
         for obj in self.recv:
             pkg, t = obj
             if start_ - t > -OFFSET:

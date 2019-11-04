@@ -30,6 +30,7 @@
                 group: 'protocols'
                 size_hint: None, None
                 size: 18, 18
+                active: True
                 pos: 20, protocol_sw_label.y
             
             Label:
@@ -127,7 +128,7 @@
                 y: lbl_d.y - 30 - self.height
             TextInput:
                 id: txt_to
-                text: "10"
+                text: "60"
                 size_hint: None, None
                 multiline: False
                 pos: 130, lbl_to.y - 5
@@ -186,7 +187,7 @@
                     app.simulator.throughput = int(txt_tr.text)
                     app.simulator.distance = int(txt_d.text)/1000
                     app.simulator.timeout = int(txt_to.text)
-                    app.simulator.load('STOP_AND_WAIT') if protocol_sw_checkbox.active else (app.simulator.load('SELECTIVE_REPEAT', int(txt_ws.text), int(txt_ss.text), int(txt_to.text)) if protocol_sr_checkbox.active else print("Please select a protocol!!!")) 
+                    app.simulator.load('STOP_AND_WAIT', int(txt_to.text)) if protocol_sw_checkbox.active else (app.simulator.load('SELECTIVE_REPEAT', int(txt_to.text), int(txt_ws.text), int(txt_ss.text)) if protocol_sr_checkbox.active else print("Please select a protocol!!!")) 
         Screen:
             id: results
             name: "results"

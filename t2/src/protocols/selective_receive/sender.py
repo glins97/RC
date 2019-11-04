@@ -13,17 +13,33 @@ class SRSender(object):
         self.win_index = 0
         self.sends = {item: -1 for item in range(self.seq_size)}
         self.acks = {item: -1 for item in range(self.seq_size)}
+        self.resend_seq = -1
 
+
+    def get_pkg_by_seq(self, seq):
+        self.sends[seq] = time.time()
+        for item in range(self.seq_size):
+            item_index = item + self.win_index
+            if seq == (item_index) % self.seq_size:
+                return [
+                    ['pkg', self.sender.message[item_index], seq],
+                    self.sends[seq]
+                ]
 
     # Pede um pacote ao protocolo, retornando o byte a ser transmitido e o marcador de tempo atual;
     # Retorno None indica que não há pacotes a serem transmitidos;
     def get_pkg(self):
+        if self.resend_seq != -1:
+            tmp = self.get_pkg_by_seq(self.resend_seq)
+            self.resend_seq = -1
+            return tmp
+
         for item in range(self.win_size):
             item_index = item + self.win_index
             seq = item_index % self.seq_size
 
-        # Verifica se já foi enviado um pacote com a seq atual;
-        # -1 é o marcador que indica que a sequencia ainda não foi enviada;
+            # Verifica se já foi enviado um pacote com a seq atual;
+            # -1 é o marcador que indica que a sequencia ainda não foi enviada;
             if item_index >= self.sender.message_size:
                 return ['STATUS_DONE', 0]
 
@@ -54,8 +70,11 @@ class SRSender(object):
     def process_response(self, response):
         # print("Sender::process_response", response)
 
+        current_window = [(self.win_index + index) % self.seq_size for index in range(self.win_size-1)]
         t, seq = response
         if t == 'ack':
+            if seq not in current_window:
+                return
             self.acks[seq] = time.time()
             self.sender.rtts.append(self.acks[seq] - self.sends[seq])
             self.update_window()

@@ -13,16 +13,18 @@ import time
 #   utilizar uma quantidade não-limitada de protocolos. Ainda, a adição de novos protocolos não 
 #   implica na modificação do código atual, facilitando a expansão e correção do sistema;
 class Receiver(object):
-    def __init__(self, protocol, *args, **kwargs):
+    def __init__(self, protocol, timeout, *args, **kwargs):
+        self.timeout = timeout
         self.protocol = self.load_protocol(protocol, *args, **kwargs)
         self.message = []
+        self.message_size = 0
         self.recv = []
 
     # Carrega o protocolo especificado, bem como configurações adicionais contidas em *args e **kwargs
     def load_protocol(self, name, *args, **kwargs):
         protocol = None
         if name == "STOP_AND_WAIT":
-            protocol = SWReceiver(self)
+            protocol = SWReceiver(self, *args, **kwargs)
             protocol.state = 'wait_0' 
             
         if name == "SELECTIVE_REPEAT":

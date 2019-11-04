@@ -34,6 +34,7 @@ class SRReceiver(object):
             seq = (self.win_index + index) % self.seq_size
             if self.recvs[seq] != -1:
                 self.receiver.message.append(self.pkts[seq])
+                self.receiver.message_size += 1
                 self.recvs[seq] = -1
                 self.pkts[seq] = None
                 shift_ammount += 1
@@ -49,8 +50,11 @@ class SRReceiver(object):
         # print("Receiver::process_response", response)
         t, value, seq = response
 
+        current_window = [(self.win_index + index) % self.seq_size for index in range(self.win_size-1)]
         if t == 'pkg':
+            self.responses.append(['ack', seq])
+            if seq not in current_window:
+                return
             self.recvs[seq] = time.time()
             self.pkts[seq] = value
-            self.responses.append(['ack', seq])
             self.update_window()

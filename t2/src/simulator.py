@@ -23,7 +23,7 @@ class Simulator(object):
     # timeout => ms
     # throughtput => bytes/second
     # error_p => probability of error with range [0, 1] 
-    def __init__(self, message_size, error_p, throughput, distance, *args, **kwargs):
+    def __init__(self, message_size, error_p, throughput, distance,*args, **kwargs):
         self.message_size = message_size
         self.error_p = error_p
         self.throughput = throughput
@@ -56,10 +56,11 @@ class Simulator(object):
         # Gera mensagem aleatória composta por números de 0 a 255 para simular 1 byte
         self.sender.message = self.generate_message(self.message_size)
         self.sender.message_size = len(self.sender.message)
+        self.receiver.message = []
+        self.receiver.message_size = 0
         transmission_delay = len(self.sender.message)/self.throughput
         
         self.data['transmission_start'] = time.time()
-        i = 0
         while True: # Execução ocorrerá até o sender explicitamente requisite o fim da mesma
 
             # Sender e receiver ambos processam os pacotes recebidos, avaliando 
@@ -68,30 +69,29 @@ class Simulator(object):
             self.receiver.process()
 
             # Feedback do estado atual da transmissão no console
-            sys.stdout.write("Transmission: " + str(i * 100 / self.sender.message_size) + "%" + "\r")
+            sys.stdout.write("Transmission: " + str(self.receiver.message_size * 100 / self.sender.message_size) + "%" + "\r")
             
             # Requisição de pacotes para o sender e receiver
             sender_pkg, sender_time = self.sender.request_pkg()
             receiver_pkg, receiver_time = self.receiver.request_pkg()
             
-            # Se 'i' for igual ao tamanho da mensagem a ser transmitida, encerra a transmissão;
-            # 'i' marca a quantidade de acks corretos recebidos pelo sender 
-            if i == self.sender.message_size: break
+            # Se 'total_acks' for igual ao tamanho da mensagem a ser transmitida, encerra a transmissão;
+            if self.receiver.message_size == self.sender.message_size: break
 
             # Se houver um pacote a ser mandado pelo sender, receiver recebe o pacote e o guarda na fila
             # de processamento, indicando que o mesmo deve ser interpretado pelo protocolo em X milisegundos a partir do momento de envio, 
             # com X = tempo de transmissão + tempo de propagação (self.distance)
+            err = 0
             if sender_pkg != None and sender_pkg != 'STATUS_DONE':
                 if uniform(0, 1) < self.error_p: # Error
-                    sender_pkg[0] = "ERR"
-                self.receiver.receive(sender_pkg, sender_time + transmission_delay + self.distance)
+                    err = 60
+                self.receiver.receive(sender_pkg, sender_time + transmission_delay + self.distance + err)
             
             # Se houver um pacote a ser enviado pelo receiver, ...
             if receiver_pkg != None:
-                i += 1 # Guarda número de acks recebidos
                 if uniform(0, 1) < self.error_p: # Error
-                    receiver_pkg[0] = "ERR"
-                self.sender.receive(receiver_pkg, receiver_time + self.distance)
+                    err = 60
+                self.sender.receive(receiver_pkg, receiver_time + self.distance + err)
 
         # Calcula dados referentes à transmissão
         self.data['transmission_end'] = time.time()
@@ -120,6 +120,7 @@ class Simulator(object):
             print("[SUCCESS] No transmission errors!")
         else:
             print("[ERROR] There were {} wrong packages.".format(diff))
+            print(self.sender.message)
             for i in range(len(self.receiver.message)):
                 print('{}x{}'.format(self.sender.message[i], self.receiver.message[i]), end=" ")
                 
