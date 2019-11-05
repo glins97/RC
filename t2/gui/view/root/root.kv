@@ -193,10 +193,10 @@
             name: "results"
             on_enter:
                 root.run_simulator() if protocol_sw_checkbox.active or protocol_sr_checkbox.active else ''
-                ttt.text = "Total transmissin time: " + str(root.total_transmission_time)
-                artt.text = "Average rtt: " + str(root.average_rtt)
-                td.text = "Transmission delay: " + str(root.transmission_delay)
-                u.text = "Usage: " + str(root.utilization)
+                result_ttt.text = str(root.total_transmission_time)
+                result_artt.text = str(root.average_rtt)
+                result_td.text = str(root.transmission_delay)
+                result_u.text = str(root.utilization)
             Label:
                 id: ttt
                 size_hint: None, None
@@ -204,11 +204,25 @@
                 text: "Total transmissin time: "
                 pos: 20, root.height - self.height - 20
             Label:
+                id: result_ttt
+                size_hint: None, None
+                size: self.texture_size
+                text: " "
+                pos: root.width - self.width - 20, ttt.y
+
+            Label:
                 id: artt
                 size_hint: None, None
                 size: self.texture_size
                 text: "Average rtt: "
                 pos: 20, ttt.y - self.height - 20
+            Label:
+                id: result_artt
+                size_hint: None, None
+                size: self.texture_size
+                text: " "
+                pos: root.width - self.width - 20, artt.y
+
             Label:
                 id: td
                 size_hint: None, None
@@ -216,11 +230,25 @@
                 text: "Transmission delay: "
                 pos: 20, artt.y - self.height - 20
             Label:
+                id: result_td
+                size_hint: None, None
+                size: self.texture_size
+                text: " "
+                pos: root.width - self.width - 20, td.y
+
+            Label:
                 id: u
                 size_hint: None, None
                 size: self.texture_size
                 text: "Usage: "
                 pos: 20, td.y - self.height - 20
+            Label:
+                id: result_u
+                size_hint: None, None
+                size: self.texture_size
+                text: " "
+                pos: root.width - self.width - 20, u.y
+
             Button:
                 text: "Try again"
                 size_hint: 1, None
