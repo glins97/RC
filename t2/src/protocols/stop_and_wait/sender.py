@@ -26,8 +26,9 @@ class SWSender(object):
         r = None
         t = time.time()
         if self.resend_seq != -1:
-            self.resend_seq = 1
+            self.resend_seq = -1
             self.set_state(self.previous_state)
+            self.sends[self.sequence_number] = t 
 
         # Verifica se já foi enviado um pacote com a seq atual;
         #  -1 é o marcador que indica que a sequencia ainda não foi enviada;

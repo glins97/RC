@@ -49,9 +49,6 @@ class Sender(object):
                 if self.protocol.sends[seq] == -1: continue
                 if start_ - self.protocol.sends[seq] > self.timeout:
                     self.protocol.resend_seq = seq
-                    print('\ntimeout!!!')
-                    print(start_)
-                    print(self.protocol.sends[seq])
 
         for obj in self.recv:
             pkg, t = obj
