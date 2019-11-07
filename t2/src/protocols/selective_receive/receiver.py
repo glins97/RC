@@ -50,7 +50,7 @@ class SRReceiver(object):
         # print("Receiver::process_response", response)
         t, value, seq = response
 
-        current_window = [(self.win_index + index) % self.seq_size for index in range(self.win_size-1)]
+        current_window = [(self.win_index + index) % self.seq_size for index in range(self.win_size)]
         if t == 'pkg':
             self.responses.append(['ack', seq])
             if seq not in current_window:

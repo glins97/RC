@@ -70,7 +70,7 @@ class SRSender(object):
     def process_response(self, response):
         # print("Sender::process_response", response)
 
-        current_window = [(self.win_index + index) % self.seq_size for index in range(self.win_size-1)]
+        current_window = [(self.win_index + index) % self.seq_size for index in range(self.win_size)]
         t, seq = response
         if t == 'ack':
             if seq not in current_window:
